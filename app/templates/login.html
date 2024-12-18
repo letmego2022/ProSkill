@@ -1,0 +1,172 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProSkill</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #2c3e50, #bdc3c7);
+            color: #333;
+            font-family: 'Roboto', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .login-container {
+            width: 350px;
+            padding: 40px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .login-box input[type="text"],
+        .login-box input[type="password"],
+        .login-box input[type="text"] {
+            width: calc(100% - 24px);
+            /* Adjusted width to account for padding */
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background: #f9f9f9;
+        }
+
+        .login-button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 20px;
+            border: none;
+            border-radius: 4px;
+            background: #3498db;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .login-button:hover {
+            background: #2980b9;
+        }
+
+        .captcha-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .captcha-input {
+            width: calc(100% - 120px);
+            /* Adjusted width to make room for the captcha image */
+            margin-right: 10px;
+        }
+
+        .captcha-image {
+            width: 100px;
+            /* Set a fixed width for the captcha image */
+            height: 40px;
+            /* Set a fixed height for the captcha image */
+            cursor: pointer;
+        }
+
+        .help-button-container {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            z-index: 1000;
+            /* Ensure it's above other elements */
+        }
+
+        .help-button {
+            display: inline-block;
+            padding: 8px 12px;
+            background: #3498db;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+
+        .help-button:hover {
+            background: #2980b9;
+        }
+
+        /* 新增 footer 样式 */
+        footer {
+            width: 100%;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            background: #f8f8f8;
+            border-top: 1px solid #ccc;
+            text-align: center;
+            padding: 10px 0;
+        }
+
+        footer p {
+            margin: 0;
+            color: #333;
+        }
+
+        footer a {
+            color: #3498db;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        footer a:hover {
+            color: #2980b9;
+        }
+        /* 您的CSS样式 */
+        .alert {
+            padding: 20px;
+            background-color: #8a1f36; /* Red */
+            color: white;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            opacity: 0;
+            transition: opacity 0.6s;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="login-container">
+        <div class="login-box">
+            <form action="{{ url_for('auth.login') }}" method="post">
+                <input type="text" name="username" placeholder="Username" required>
+                <input type="password" name="password" placeholder="Password" required>
+                <button type="submit" class="login-button">Log In</button>
+            </form>
+        </div>
+        <!-- Flash Message Container -->
+        <div id="flash-message" class="alert"></div>
+    </div>
+
+    <!-- Feedback Link -->
+    <footer>
+        <p>Have a question or feedback? <a href="http://doc.k8s-test.clps.com.cn/zyplayer-doc/doc-wiki#/page/show?pageId=3013" target="_blank">Contact us</a>.</p>
+    </footer>
+    <script>
+        // 获取flash消息
+        document.addEventListener('DOMContentLoaded', function() {
+            var flashMessage = document.getElementById('flash-message');
+            var messages = {{ get_flashed_messages() | tojson | safe }};
+            if (messages.length > 0) {
+                flashMessage.textContent = messages[0]; // 显示第一条消息
+                flashMessage.style.opacity = 1; // 显示消息
+                setTimeout(function() { // 2秒后隐藏消息
+                    flashMessage.style.opacity = 0;
+                }, 2000);
+            }
+        });
+    </script>
+</body>
+</html>

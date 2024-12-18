@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>项目详情</title>
+    <!-- 引入 Bootstrap CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}">
+    <style>
+        /* 设置表格宽度为适应内容 */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
+        /* 设置表格行高固定 */
+        .table th, .table td {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-height: 30px; /* 可以根据需要调整行高 */
+        }
+        /* 优化技能部分的标签样式 */
+        .skill-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        .skill-tag {
+            background-color: #007bff;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <h1 class="text-center my-4">项目详情 - {{ project.project_name }}</h1>
+        <div class="row">
+            <div class="col-md-6">
+                <p><strong>负责人：</strong>{{ project.responsible_person }}</p>
+                <p><strong>实施周期：</strong>{{ project.implementation_period }}</p>
+                <p><strong>地点：</strong>{{ project.location }}</p>
+            </div>
+            <div class="col-md-6 text-right">
+                <button type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#addEmployeeModal">
+                    添加员工
+                </button>
+            </div>
+        </div>
+
+        <h2 class="my-4">项目员工情况</h2>
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">员工ID</th>
+                        <th scope="col">姓名</th>
+                        <th scope="col">职级</th>
+                        <th scope="col">地点</th>
+                        <th scope="col">专业技能</th>
+                        <th scope="col">语言能力</th>
+                        <th scope="col">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for employee in employees %}
+                    <tr>
+                        <th scope="row" data-full="{{ employee.employee_id }}">{{ employee.employee_id }}</th>
+                        <td data-full="{{ employee.name }}">{{ employee.name }}</td>
+                        <td data-full="{{ employee.level }}">{{ employee.level }}</td>
+                        <td data-full="{{ employee.location }}">{{ employee.location }}</td>
+                        <td data-full="{{ employee.skill }}">
+                            <div class="skill-tags">
+                                {% for skill in employee.skill.split('/') %}
+                                <span class="skill-tag">{{ skill }}</span>
+                                {% endfor %}
+                            </div>
+                        </td>
+                        <td data-full="{{ employee.lang }}">{{ employee.lang }}</td>
+                        <td>
+                            <button type="button" class="btn btn-danger btn-sm"
+                                    data-employee-id="{{ employee.employee_id }}"
+                                    data-project-id="{{ project.id }}"
+                                    onclick="removeEmployee(this)">
+                                移除
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 添加员工的模态框 -->
+    <div class="modal fade" id="addEmployeeModal" tabindex="-1" role="dialog" aria-labelledby="addEmployeeModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addEmployeeModalLabel">添加员工</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="addEmployeeForm">
+                        <div class="form-group">
+                            <label for="employeeSelect">选择员工</label>
+                            <select class="form-control" id="employeeSelect" name="employee_id">
+                                {% for employee in all_employees %}
+                                <option value="{{ employee.employee_id }}">{{ employee.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="utilization">利用率 (%)</label>
+                            <input type="number" class="form-control" id="utilization" name="utilization" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="schedule">排期</label>
+                            <input type="text" class="form-control" id="schedule" name="schedule"  placeholder="例如：2024-01-01到2024-12-31" required>
+                            <small class="form-text text-muted">请输入任务的开始日期和结束日期，格式为“YYYY-MM-DD到YYYY-MM-DD”。</small>
+                        </div>
+                        <button type="submit" class="btn btn-primary">提交</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 引入 jQuery、Popper.js 和 Bootstrap JS -->
+    <script src="{{ url_for('static', filename='jquery-3.5.1.slim.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='popper.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='jquery-3.6.0.min.js') }}"></script>
+    <script>
+        // 移除员工的函数
+        function removeEmployee(button) {
+            var employeeId = button.getAttribute('data-employee-id');
+            var projectId = button.getAttribute('data-project-id');
+
+            if (confirm('确定要从项目中移除这个员工吗？')) {
+                // 构造请求数据
+                var requestData = {
+                    employee_id: employeeId,
+                    project_id: projectId
+                };
+
+                // 构造 URL，符合 /projects_remove_employee 路由
+                var url = "/projects_remove_employee";
+
+                // 发送移除请求到服务器，设置 Content-Type 为 application/json
+                $.ajax({
+                    url: url,
+                    type: 'POST',
+                    contentType: 'application/json',  // 设置请求头为 JSON 格式
+                    data: JSON.stringify(requestData), // 将 JavaScript 对象转换为 JSON 字符串
+                    success: function(response) {
+                        // 移除成功后刷新页面
+                        alert(response.message);  // 显示成功消息
+                        location.reload();
+                    },
+                    error: function(error) {
+                        console.log(error);
+                        alert('发生错误，请重试');
+                    }
+                });
+            }
+        }
+
+        // 提交添加员工的表单
+        $('#addEmployeeForm').on('submit', function(e) {
+            e.preventDefault();
+            var employeeId = $('#employeeSelect').val();
+            var utilization = $('#utilization').val();
+            var schedule = $('#schedule').val();
+
+            if (employeeId && utilization && schedule) {
+                var requestData = {
+                    project_id: {{ project.id }},
+                    employee_id: employeeId,
+                    utilization: utilization,
+                    schedule: schedule
+                };
+
+                var url = "/add_employee_to_project";
+
+                $.ajax({
+                    url: url,
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(requestData),
+                    success: function(response) {
+                        alert(response.message);
+                        location.reload();
+                    },
+                    error: function(error) {
+                        console.log(error);
+                        alert('发生错误，请重试');
+                    }
+                });
+            } else {
+                alert('请填写所有字段');
+            }
+        });
+    </script>
+</body>
+</html>

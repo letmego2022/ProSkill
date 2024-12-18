@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProSkill</title>
+    <link rel="stylesheet" href="static/bootstrap.min.css">
+    <script src="static/jquery-3.5.1.min.js"></script>
+    <script src="static/popper.min.js"></script>
+    <script src="static/bootstrap.min.js"></script>
+    <link href="https://unpkg.com/filepond/dist/filepond.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/filepond/dist/filepond.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.15.349/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.2/mammoth.browser.min.js"></script>
+    <style>
+        /* 导航栏样式 */
+        .navbar {
+            background-color: #333; /* 暗黑色背景 */
+        }
+        .navbar .navbar-brand {
+            color: white; /* 文字颜色 */
+        }
+        /* 调整导航栏和内容之间的间距 */
+        body, html {
+            padding-top: 25px; /* 调整这个值以确保内容不被导航栏遮挡 */
+            height: 100%;
+            margin: 0;
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f9fa;
+        }
+        .form-section {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        table {
+            margin-top: 20px;
+            table-layout: fixed; /* 确保表格列宽固定 */
+        }
+        .table th {
+            background-color: #007bff;
+            color: white;
+        }
+        .table-hover tbody tr:hover {
+            background-color: #f1f1f1;
+        }
+        .table td, .table th {
+            padding: 8px !important;
+            max-width: 150px; /* 设置最大宽度 */
+            white-space: nowrap; /* 防止文本换行 */
+            overflow: hidden; /* 超出部分隐藏 */
+            text-overflow: ellipsis; /* 显示省略号 */
+        }
+        .form-control {
+            height: calc(1.5rem + 8px);
+        }
+        .alert {
+            padding: 5px;
+            height: 30px;
+            line-height: 30px;
+            background-color: #008000; /* Green */
+            color: white;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            opacity: 0;
+            transition: opacity 0.6s;
+            font-size: 18px;
+        }
+        /* 按钮样式 */
+        .btn-sm {
+            font-size: 0.875rem;
+        }
+        #filterLocation {
+            width: 150px; /* Set the desired width */
+        }
+        /* 旋转加载动画 */
+        #loading {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+        }
+
+        .spinner-border {
+            animation: spin 1s linear infinite;
+            border-top-color: #007bff;
+        }
+
+        /* 定义旋转动画 */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <!-- 通用的导航栏 -->
+    {% include 'navbar.html' %}
+    <!-- 新增员工表单 -->
+    <div class="form-section">
+        <!-- 返回总览按钮 -->
+        <button class="btn btn-secondary" id="back-to-overview">返回总览</button>
+    </div>
+
+    <!-- 数据表格 -->
+    <h2 class="h5 d-flex justify-content-between align-items-center">
+        <div class="d-flex justify-content-start align-items-center" style="flex: 1;">
+            GTC 测试人员列表
+        </div>
+        <!-- 旋转的等待动画 -->
+        <div id="loading" style="display: none;">
+            <div class="spinner-border" role="status" style="width: 3rem; height: 3rem; border-width: 0.3rem;">
+                <span class="visually-hidden"></span>
+            </div>
+        </div>
+
+        <!-- flash-message -->
+        <div id="flash-message" class="alert text-center" style="flex: 1; margin: 0 auto; max-width: 25%;"></div>
+        <div class="ml-auto d-flex justify-content-end" style="flex: 1;">
+            <a href="/cvinfo" class="btn btn-primary ml-2">中文简历列表</a>
+            <a href="/cveninfo" class="btn btn-primary ml-2">英文简历列表</a>
+        </div>
+    </h2>
+
+    <!-- 添加筛选功能的地点下拉框 -->
+    <select class="form-control" id="filterLocation" name="location">
+        <option value="">全部</option>
+        <option value="大连" {% if selected_location == "大连" %}selected{% endif %}>大连</option>
+        <option value="上海" {% if selected_location == "上海" %}selected{% endif %}>上海</option>
+        <option value="广州" {% if selected_location == "广州" %}selected{% endif %}>广州</option>
+        <option value="深圳" {% if selected_location == "深圳" %}selected{% endif %}>深圳</option>
+    </select>
+
+    <table class="table table-bordered table-hover table-sm">
+        <thead>
+            <tr>
+                <th width="10%">姓名</th>
+                <th width="5%">职级</th>
+                <th width="5%">地点</th>
+                <th width="4%">性别</th>
+                <th width="20%">专业能力</th>
+                <th width="4%">接受出差</th>
+                <th width="10%">语言能力</th>
+                <th width="15%">项目 & 利用率</th>
+                <th width="15%">当前任务排期</th>
+                <th width="17%">操作</th>
+            </tr>
+        </thead>
+        <tbody id="employeeTableBody">
+            {% for employee in employees %}
+            <tr class="employeeRow" data-location="{{ employee.location }}">
+                <form method="post">
+                    <td><input type="text" class="form-control" name="name" value="{{ employee.name }}" title="{{ employee.name }}"></td>
+                    <td><input type="text" class="form-control" name="level" value="{{ employee.level }}" title="{{ employee.level }}"></td>
+                    <td><input type="text" class="form-control" name="location" value="{{ employee.location }}" title="{{ employee.location }}"></td>
+                    <td><input type="text" class="form-control" name="sex" value="{{ employee.sex }}" title="{{ employee.sex }}"></td>
+                    <td><input type="text" class="form-control" name="skill" value="{{ employee.skill }}" title="{{ employee.skill }}"></td>
+                    <td><input type="text" class="form-control" name="chai" value="{{ employee.chai }}" title="{{ employee.chai }}"></td>
+                    <td><input type="text" class="form-control" name="lang" value="{{ employee.lang }}" title="{{ employee.lang }}"></td>
+                    <td>
+                        {% for project, utilization in employee.projects_utilizations.items() %}
+                        <div class="form-inline project-utilization-edit">
+                            <input type="text" class="form-control mr-2" name="project_{{ loop.index0 }}" value="{{ project }}" placeholder="项目名称" title="{{ project }}">
+                            <input type="text" class="form-control mr-2" name="utilization_{{ loop.index0 }}" value="{{ utilization }}" placeholder="利用率" title="{{ utilization }}">
+                        </div>
+                        {% endfor %}
+                    </td>
+                    <td><input type="text" class="form-control" name="schedule" value="{{ employee.schedule }}" title="{{ employee.schedule }}"></td>
+                    <td>
+                        <button type="submit" name="action" value="edit" class="btn btn-sm btn-warning">修改</button>
+                    </td>
+                </form>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

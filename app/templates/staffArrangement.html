@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProSkill</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="static/bootstrap.min.css">
+
+    <!-- 自定义样式 -->
+    <style>
+        /* 导航栏样式 */
+        .navbar {
+            background-color: #333;
+        }
+        .navbar .navbar-brand {
+            color: white;
+        }
+        body, html {
+            padding-top: 30px;
+            height: 100%;
+            margin: 0;
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f9fa;
+        }
+        .container {
+            margin-top: 0;
+        }
+        .mt-4 {
+            margin-top: 0;
+        }
+        .container-fluid {
+            padding: 0;
+        }
+        .row {
+            height: 100%;
+            margin: 0;
+        }
+        .col-12.col-md-6 {
+            padding: 0;
+        }
+        /* 美化卡片 */
+        .card {
+            height: 100%;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border: none;
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        .card-body {
+            padding: 25px;
+        }
+        /* 美化文本框 */
+        textarea {
+            min-height: 15vh;
+            border-radius: 12px;
+            border: 2px solid #e0e0e0;
+            padding: 12px;
+            transition: all 0.3s ease;
+        }
+        textarea:focus {
+            border-color: #4CAF50;
+            box-shadow: 0 0 10px rgba(76,175,80,0.2);
+        }
+        #display-box {
+            white-space: pre-wrap;
+            padding: 20px;
+            background-color: white;
+            border-radius: 15px;
+            border: none;
+            height: 80vh;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        /* 美化按钮容器 */
+        .button-container {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            margin-top: 15px;
+            gap: 12px;
+        }
+        /* 美化按钮 */
+        .button-container button,
+        .btn {
+            flex-grow: 1;
+            margin: 5px;
+            padding: 10px 20px;
+            border-radius: 25px;
+            border: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+        }
+        .toggle-button {
+            padding: 10px 20px;
+            background: linear-gradient(145deg, #007bff, #0056b3);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,123,255,0.3);
+        }
+        .toggle-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,123,255,0.4);
+        }
+        .toggle-button.active {
+            background: linear-gradient(145deg, #dc3545, #c82333);
+            box-shadow: 0 4px 15px rgba(220,53,69,0.3);
+        }
+        /* 美化表单元素 */
+        .form-label {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+        .form-select, .form-control {
+            width: 100%;
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+            padding: 8px 12px;
+            transition: all 0.3s ease;
+        }
+        .form-select:focus, .form-control:focus {
+            border-color: #4CAF50;
+            box-shadow: 0 0 10px rgba(76,175,80,0.2);
+        }
+        /* 美化表格 */
+        table {
+            width: 100%;
+            max-width: 65em;
+            border: none;
+            margin: 15px auto;
+            border-collapse: separate;
+            border-spacing: 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            border-radius: 15px;
+            overflow: hidden;
+        }
+        table th,
+        table td {
+            height: 40px;
+            border: 1px solid #eef0f5;
+            padding: 12px 15px;
+            transition: all 0.3s ease;
+        }
+        table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+        table tr:hover {
+            background-color: #f5f9ff;
+        }
+        /* 美化复选框 */
+        .form-check-input {
+            appearance: none;
+            background-color: #fff;
+            border: 2px solid #4CAF50;
+            border-radius: 6px;
+            cursor: pointer;
+            height: 1.5em;
+            width: 1.5em;
+            transition: all 0.3s ease;
+        }
+        .form-check-input:checked {
+            background-color: #4CAF50;
+            border-color: #4CAF50;
+            box-shadow: 0 0 10px rgba(76,175,80,0.2);
+        }
+        .form-check-input:checked::before {
+            content: "";
+            position: absolute;
+            display: block;
+            height: 0.75em;
+            width: 0.375em;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(45deg);
+            border: solid white;
+            border-width: 0 3px 3px 0;
+        }
+        .form-check-label {
+            margin-left: 0.8em;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+        /* 返回按钮样式 */
+        #back-to-overview {
+            margin: 15px 0;
+            background: linear-gradient(145deg, #6c757d, #5a6268);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 25px;
+            box-shadow: 0 4px 15px rgba(108,117,125,0.3);
+            transition: all 0.3s ease;
+        }
+        #back-to-overview:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(108,117,125,0.4);
+        }
+    </style>
+</head>
+<body>
+    <!-- 通用的导航栏 -->
+    {% include 'navbar.html' %}
+    <!-- 页面内容 -->
+    <div class="container-fluid">
+                        <!-- 返回总览按钮 -->
+        <button class="btn btn-secondary" id="back-to-overview">返回总览</button>
+        <div class="row">
+            <div class="col-12 col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h2 class="card-title">测试人力需求</h2>
+                        
+                        <!-- 工作地点选择 -->
+                        <div class="mb-3">
+                            <label for="location" class="form-label">工作地点</label>
+                            <select class="form-select" id="location">
+                                <option value="上海">上海</option>
+                                <option value="大连">大连</option>
+                                <option value="香港">香港</option>
+                                <option value="深圳">深圳</option>
+                                <option value="广州">广州</option>
+                            </select>
+                        </div>
+
+                        <!-- 工作语言选择 -->
+                        <div class="mb-3">
+                            <label class="form-label">工作语言</label><br>
+                            <input type="checkbox" id="language-english" value="english"> 英语
+<!--                            <input type="checkbox" id="language-chinese" value="chinese"> 中文-->
+                            <input type="checkbox" id="language-cantonese" value="cantonese"> 粤语
+                        </div>
+
+                        <!-- 技能选择 -->
+                        <div class="mb-3">
+                            <label class="form-label">技能</label><br>
+                            <input type="checkbox" id="skill-1" value="手动功能测试"> 手动测试
+                            <input type="checkbox" id="skill-2" value="自动化功能测试"> 自动化测试
+                            <input type="checkbox" id="skill-3" value="性能测试"> 性能测试
+							<input type="checkbox" id="skill-4" value="安全测试"> 安全测试
+                        </div>
+                        
+                        <!-- 项目实施时间 -->
+                        <div class="mb-3">
+                            <label class="form-label">实施时间</label>
+                            <div class="row">
+                                <div class="col-6">
+                                    <input type="date" id="start-time" class="form-control" placeholder="选择开始日期" onchange="validateDates()">
+                                </div>
+                                <div class="col-6">
+                                    <input type="date" id="end-time" class="form-control" placeholder="选择结束日期" onchange="validateDates()">
+                                </div>
+                            </div>
+                            <!-- 错误提示 -->
+                            <div id="date-error" class="text-danger mt-2" style="display: none;">结束时间必须晚于开始时间！</div>
+                        </div>
+
+                        <!-- 需要人数 -->
+                        <div class="mb-3">
+                            <label for="num-people" class="form-label">需要人数</label>
+                            <input type="number" id="num-people" class="form-control" placeholder="请输入人数" min="1">
+                        </div>
+                        <!-- 考虑排期 -->
+                        <div class="mb-3">
+                          <label class="form-label">是否考虑排期</label>
+                          <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="schedule-toggle">
+                            <label class="form-check-label" for="schedule-toggle"></label>
+                          </div>
+                        </div>
+
+                        <!-- 其他信息输入框 -->
+                        <div class="mb-3">
+                            <label for="other-info" class="form-label">其他信息</label>
+                            <textarea class="form-control" id="other-info" rows="2" placeholder="请输入其他信息"></textarea>
+                        </div>
+
+                        <!-- 用于显示操作结果的提示信息 -->
+                        <div id="messageBox" class="alert alert-success d-none"></div>
+                        <div class="button-container">
+                            <button class="btn btn-primary" onclick="submitTestCase()">
+                                Submit Generation
+                                <!-- Spinner放在提交按钮内 -->
+                                <span id="submitSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                            </button>
+<!--                            <button class="btn btn-secondary" onclick="resetSession()">Session Reset</button>-->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-9">
+                <div class="card">
+                    <div class="card-body">
+                        <h2 class="card-title">分析结果</h2>
+                        <div id="display-box" class="p-3">
+                            <!-- 内容将通过JavaScript动态生成 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JavaScript -->
+    <script src="static/jquery-3.5.1.slim.min.js"></script>
+    <script src="static/popper.min.js"></script>
+    <script src="static/bootstrap.min.js"></script>
+	<script src="static/marked.min.js"></script>
+    <!-- 自定义JavaScript代码 -->
+    <script>
+            // 临时存储未完成的 Markdown 块
+            var incompleteMarkdown = "";
+
+            // 用于逐步构建最终显示的内容
+            var finalContent = "";
+
+            // 处理流式数据的函数
+            function displayStreamedData(data, clearPrevious = false) {
+                var displayBox = document.getElementById('display-box');
+
+                // 如果需要清空之前的内容
+                if (clearPrevious) {
+                    finalContent = ""; // 清空解析后的内容
+                    incompleteMarkdown = ""; // 清空未完成的 Markdown 块
+                    displayBox.innerHTML = ""; // 清空显示区域
+                }
+
+                // 合并新接收的数据和未完成的 Markdown
+                var content = incompleteMarkdown + data;
+
+                // 定义正则表达式匹配完整的 Markdown 块
+                var markdownRegex = /```markdown([\s\S]*?)```/g;
+                var match;
+                var lastMatchEnd = 0; // 保存上一次匹配的结束位置
+
+                // 逐步解析数据
+                while ((match = markdownRegex.exec(content)) !== null) {
+                    // 追加非 Markdown 部分
+                    finalContent += content.substring(lastMatchEnd, match.index);
+
+                    // 解析 Markdown 内容
+                    var markdownContent = match[1]; // 提取 Markdown 内容
+                    finalContent += marked.parse(markdownContent); // 转换为 HTML
+
+                    // 更新最后匹配的位置
+                    lastMatchEnd = markdownRegex.lastIndex;
+                }
+
+                // 处理最后剩余的非完整 Markdown 块
+                incompleteMarkdown = content.substring(lastMatchEnd);
+
+                // 更新显示区域，保留非 Markdown 内容原样显示
+                displayBox.innerHTML = finalContent + incompleteMarkdown;
+                displayBox.scrollTop = displayBox.scrollHeight; // 滚动到底部
+            }
+
+
+        function validateDates() {
+            var startTime = document.getElementById('start-time').value;
+            var endTime = document.getElementById('end-time').value;
+            var errorBox = document.getElementById('date-error');
+
+            // 如果时间值为空，不进行验证
+            if (!startTime || !endTime) {
+                errorBox.style.display = 'none';
+                return;
+            }
+
+            // 比较开始时间和结束时间
+            if (new Date(startTime) >= new Date(endTime)) {
+                errorBox.style.display = 'block'; // 显示错误信息
+            } else {
+                errorBox.style.display = 'none'; // 隐藏错误信息
+            }
+        }
+
+        function startSpinner(spinnerId) {
+            var spinner = document.getElementById(spinnerId);
+            spinner.classList.remove('d-none');
+        }
+
+        function stopSpinner(spinnerId) {
+            var spinner = document.getElementById(spinnerId);
+            spinner.classList.add('d-none');
+        }
+        
+        async function submitTestCase() {
+            var location = document.getElementById('location').value;
+            var languages = [];
+            if (document.getElementById('language-english').checked) languages.push('英语');
+<!--            if (document.getElementById('language-chinese').checked) languages.push('Chinese');-->
+            if (document.getElementById('language-cantonese').checked) languages.push('粤语');
+            var skills = [];
+            if (document.getElementById('skill-1').checked) skills.push('手动测试');
+            if (document.getElementById('skill-2').checked) skills.push('自动化测试');
+            if (document.getElementById('skill-3').checked) skills.push('性能测试');
+			if (document.getElementById('skill-4').checked) skills.push('安全测试');
+            var otherInfo = document.getElementById('other-info').value;
+
+            var numPeople = document.getElementById('num-people').value;
+            var startTime = document.getElementById('start-time').value;
+            var endTime = document.getElementById('end-time').value;
+            var errorBox = document.getElementById('date-error');
+            var considerSchedule = document.getElementById('schedule-toggle').checked; // 获取排期选择的状态
+
+            // 提交前再次校验时间
+            if (new Date(startTime) >= new Date(endTime)) {
+                errorBox.style.display = 'block';
+                return; // 阻止提交
+            } else {
+                errorBox.style.display = 'none';
+            }
+
+            startSpinner('submitSpinner');
+            // **清空显示区域**
+            displayStreamedData("", true);
+
+            var displayBox = document.getElementById('display-box');
+            displayBox.textContent = ''; // Clear previous content
+
+            try {
+                const response = await fetch('/staffrequest_new', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        location: location,
+                        languages: languages,
+                        skills: skills,
+                        otherInfo: otherInfo,
+                        startTime: startTime,
+                        endTime: endTime,
+                        numPeople: numPeople,
+                        considerSchedule: considerSchedule // 将排期选择的状态添加到发送的数据中
+                    })
+                });
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    const chunk = decoder.decode(value, { stream: true });
+                    displayStreamedData(chunk);
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+            } finally {
+                stopSpinner('submitSpinner');
+            }
+        }
+
+        // 会话重置按钮的点击事件处理函数
+        function resetSession() {
+            fetch('/reset_renli_new', { // 假设后端重置路由为'/reset'
+                method: 'POST',
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('网络响应错误');
+                }
+                return response.json(); // 解析JSON数据
+            })
+            .then(data => {
+                displayMessage('Session Reset Successful'); // 展示重置成功的消息
+            })
+            .catch(error => {
+                console.error('会话重置时发生错误:', error);
+                displayMessage('Session reset failed:' + error.message); // 展示错误消息
+            });
+        }
+        
+        // 展示消息的函数
+        function displayMessage(message) {
+            var messageBox = document.getElementById('messageBox');
+            messageBox.textContent = message;
+            messageBox.classList.remove('d-none'); // 显示消息
+            setTimeout(() => {
+                messageBox.classList.add('d-none'); // 3秒后隐藏消息
+            }, 3000);
+        }
+                       // 获取按钮元素
+        var backButton = document.getElementById('back-to-overview');
+
+        // 为按钮添加点击事件监听器
+        backButton.addEventListener('click', function() {
+            // 点击按钮后跳转到总览页面
+            window.location.href = '/proDashboardnew'; // 将 '/overview' 替换成你的总览页面的实际URL
+        });
+        // 页面加载完成后调用重置方法
+        document.addEventListener('DOMContentLoaded', function () {
+            resetSession();
+        });
+    </script>
+</body>
+</html>

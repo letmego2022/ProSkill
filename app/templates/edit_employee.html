@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProSkill</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f7f7f7;
+            margin: 0;
+            padding: 20px;
+        }
+        form {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            margin: auto;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+        .form-group {
+            margin-bottom: 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="text"], select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        select {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background: url('data:image/svg+xml;utf8,<svg fill="gray" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>') no-repeat right #fff;
+            background-position-x: calc(100% - 10px);
+        }
+        input[type="submit"], button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        input[type="submit"]:hover, button:hover {
+            background-color: #45a049;
+        }
+        .button-group {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: space-between;
+        }
+         .loading-container {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+        .loader {
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 2s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .loading-text {
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <form id="employeeForm" action="{{ url_for('staffedit.update_employee', employee_id=employee.employee_id) }}" method="POST">
+            <div class="form-group">
+                <label for="name">姓名:</label>
+                <input type="text" id="name" name="name" value="{{ employee.name }}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="level">级别:</label>
+                <select id="level" name="level">
+                    {% for i in range(0, 6) %}
+                        <option value="B{{ i }}" {% if employee.level == 'B' + i|string %}selected{% endif %}>B{{ i }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="location">位置:</label>
+                <select id="location" name="location">
+                    {% set locations = ['大连', '上海', '广州', '深圳', '香港'] %}
+                    {% for loc in locations %}
+                        <option value="{{ loc }}" {% if employee.location == loc %}selected{% endif %}>{{ loc }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="sex">性别:</label>
+                <select id="sex" name="sex">
+                    <option value="男" {% if employee.sex == '男' %}selected{% endif %}>男</option>
+                    <option value="女" {% if employee.sex == '女' %}selected{% endif %}>女</option>
+                    <option value="其他" {% if employee.sex == '其他' %}selected{% endif %}>其他</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="skill">技能:</label>
+                <input type="text" id="skill" name="skill" value="{{ employee.skill }}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="chai">出差意愿:</label>
+                <select id="chai" name="chai">
+                    <option value="0" {% if employee.chai == '0' %}selected{% endif %}>不愿意出差</option>
+                    <option value="1" {% if employee.chai != '0' %}selected{% endif %}>愿意出差</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="lang">语言:</label>
+                <input type="text" id="lang" name="lang" value="{{ employee.lang }}">
+            </div>
+
+            <div class="button-group">
+                <input type="submit" value="更新员工信息">
+                <button type="button" onclick="analyzeSkills()">技能分析</button>
+            </div>
+        </form>
+    </div>
+     <div id="loadingContainer" class="loading-container">
+        <div class="loader"></div>
+        <div class="loading-text">正在分析技能...<br>请稍等片刻！</div>
+    </div>
+
+    <script>
+        function analyzeSkills() {
+            var formData = new FormData(document.getElementById('employeeForm'));
+            var skills = document.getElementById('skill').value;
+            formData.append('skills', skills);
+
+            // Show the loading animation
+            document.getElementById('loadingContainer').style.display = 'block';
+
+            fetch('/UpdateSkills', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Hide the loading animation
+                document.getElementById('loadingContainer').style.display = 'none';
+                if (data.success) {
+                    document.getElementById('skill').value = data.new_skills;
+                } else {
+                    alert('技能分析失败');
+                }
+            })
+            .catch(error => {
+                // Hide the loading animation in case of an error
+                document.getElementById('loadingContainer').style.display = 'none';
+                console.error('Error:', error);
+                alert('发生错误，请稍后再试');
+            });
+        }
+    </script>
+</body>
+</html>

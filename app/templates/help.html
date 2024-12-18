@@ -1,0 +1,165 @@
+!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Help</title>
+    <!-- 引入Bootstrap CSS -->
+    <link href="static/bootstrap.min.css" rel="stylesheet">
+    <!-- 自定义样式 -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f1f3f5;
+        }
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 250px;
+            background-color: #343a40;
+            padding: 20px;
+            color: white;
+            overflow-y: auto;
+        }
+        .sidebar h4 {
+            color: #f8f9fa;
+            margin-bottom: 30px;
+        }
+        .nav-link {
+            color: #ced4da;
+        }
+        .nav-link:hover {
+            color: #ffffff;
+        }
+        .content {
+            margin-left: 270px;
+            padding: 20px;
+        }
+        .markdown-content {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .content h2 {
+            border-bottom: 2px solid #343a40;
+            padding-bottom: 10px;
+        }
+        pre {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #6c757d;
+            overflow-x: auto;
+        }
+        code {
+            background-color: #e9ecef;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 左侧导航栏 -->
+    <div class="sidebar">
+        <h4>help directory</h4>
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link" href="#section1">summary</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#section2">mounting</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#section3">Instructions</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#section4">FAQs</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#section5">Support</a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- 右侧内容区 -->
+    <div class="content">
+        <div id="section1" class="markdown-content"></div>
+        <div id="section2" class="markdown-content"></div>
+        <div id="section3" class="markdown-content"></div>
+        <div id="section4" class="markdown-content"></div>
+        <div id="section5" class="markdown-content"></div>
+    </div>
+
+    <!-- 引入marked.js库 -->
+    <script src="static/marked.min.js"></script>
+    <!-- 渲染Markdown内容 -->
+    <script>
+        // 定义Markdown内容
+        const markdownSections = {
+    section1: `## Introduction
+### 1. Platform Access
+
+- **Default Account**: user: admin1 passwd: 123456.
+- **Login**: Use the credentials of the default account to log into the platform.
+- **Admin Backend**: Access the server locally on port 5000.
+
+### 2. Functional Modules
+
+- **Generate Functional Test Cases**: Generate test cases using Gherkin.
+- **Generate API Automation Test Scripts**: First generate the corresponding .feature file using Gherkin, then generate the corresponding step .java file.
+
+---`,
+    section2: `## Installation
+Please follow these steps to install:
+1. Ensure that you are using a Python 3 environment.
+2. Execute \`pip install -r requirements.txt\`.
+3. Follow the prompts to complete the installation.`,
+    section3: `## Usage Instructions
+Welcome to our AI-driven software testing platform! This section will provide detailed instructions on how to operate the system to ensure you can make full use of all its features.
+
+### 1. Overview of the System Interface
+- **Dashboard**: After logging in, you will see the dashboard, which displays an overview of all projects, including recently active projects and quick access points.
+- **Navigation Bar**: The navigation bar at the top of the page provides quick access links to major functional modules, such as “Functional Testing,” “API Testing,” and “Test Reports.”
+
+### 2. Generating Functional Test Cases
+- **Requirement Input**: In the “Functional Testing” module, you can input or upload requirement documents (e.g., Word, PDF format) through a text box.
+- **AI Analysis**: After submitting the requirements, the AI will analyze the document content and generate a draft of test cases within a few minutes.
+- **Case Editing**: You can view, edit, or add more test cases to ensure coverage of all testing scenarios.
+
+### 3. Automated API Testing
+- **API Definition**: In the “API Testing” module, you need to define or import API interface information, including URL, method, parameters, etc.
+- **Script Generation**: Once the interface information is confirmed, the platform will automatically generate the corresponding test scripts.
+- **Script Execution and Debugging**: You can execute the generated scripts and debug them as needed to ensure their correctness and stability.`,
+    section4: `## Frequently Asked Questions
+This section answers common questions you may encounter while using the platform.
+
+### 1. Project and Case Management
+- **Q: How do I create and manage multiple test projects?**
+  - A: In the dashboard, you can click the “Create Project” button to create a new project.
+
+### 2. AI Test Case Generation
+- **Q: Do AI-generated test cases require manual review?**
+  - A: Yes, it is recommended to manually review the AI-generated test cases.`,
+    section5: `## Contact Support
+If you encounter any issues while using the platform, please contact our support team.
+
+- **email**：Send an email to [lewis.liu&clpsglobal.com](mailto:lewis.liu@clpsglobal.com)。`
+        };
+
+        // 渲染Markdown内容到页面
+        document.getElementById('section1').innerHTML = marked.parse(markdownSections.section1);
+        document.getElementById('section2').innerHTML = marked.parse(markdownSections.section2);
+        document.getElementById('section3').innerHTML = marked.parse(markdownSections.section3);
+        document.getElementById('section4').innerHTML = marked.parse(markdownSections.section4);
+        document.getElementById('section5').innerHTML = marked.parse(markdownSections.section5);
+    </script>
+
+    <!-- 引入Bootstrap JS和依赖 -->
+    <script src="static/bootstrap.bundle.min.js"></script>
+</body>
+</html>

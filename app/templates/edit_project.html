@@ -1,0 +1,71 @@
+<!-- templates/edit_project.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ProSkill</title>
+    <!-- 引入 Bootstrap CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}">
+</head>
+<body>
+    <div class="container-fluid">
+        <h1 class="text-center my-4">编辑项目 - {{ project.project_name }}</h1>
+        <form action="{{ url_for('staffedit.update_project', project_id=project.id) }}" method="POST">
+            <!-- 第一行：项目名称、负责人、实施周期 -->
+            <div class="row">
+                <div class="col-md-4 form-group">
+                    <label for="projectName">项目名称</label>
+                    <input type="text" class="form-control" id="projectName" name="project_name" value="{{ project.project_name }}" required>
+                </div>
+                <div class="col-md-4 form-group">
+                    <label for="responsiblePerson">负责人</label>
+                    <input type="text" class="form-control" id="responsiblePerson" name="responsible_person" value="{{ project.responsible_person }}" required>
+                </div>
+                <div class="col-md-4 form-group">
+                    <label for="implementationPeriod">实施周期</label>
+                    <input type="text" class="form-control" id="implementationPeriod" name="implementation_period" value="{{ project.implementation_period }}" required>
+                </div>
+            </div>
+
+            <!-- 第二行：地点、接受远程、语言要求 -->
+            <div class="row">
+                <div class="col-md-4 form-group">
+                    <label for="location">地点</label>
+                    <input type="text" class="form-control" id="location" name="location" value="{{ project.location }}" required>
+                </div>
+                <div class="col-md-4 form-group">
+                    <label for="remoteAllowed">接受远程</label>
+                    <select class="form-control" id="remoteAllowed" name="remote_allowed">
+                        <option value="True" {% if project.remote_allowed %}selected{% endif %}>是</option>
+                        <option value="False" {% if not project.remote_allowed %}selected{% endif %}>否</option>
+                    </select>
+                </div>
+                <div class="col-md-4 form-group">
+                    <label for="languageRequirement">语言要求</label>
+                    <input type="text" class="form-control" id="languageRequirement" name="language_requirement" value="{{ project.language_requirement }}" required>
+                </div>
+            </div>
+
+            <!-- 第三行：需求人数、备注 -->
+            <div class="row">
+                <div class="col-md-4 form-group">
+                    <label for="requiredNumber">需求人数</label>
+                    <input type="number" class="form-control" id="requiredNumber" name="required_number" value="{{ project.required_number }}" required>
+                </div>
+                <div class="col-md-8 form-group">
+                    <label for="notes">备注</label>
+                    <textarea class="form-control" id="notes" name="notes" rows="3">{{ project.notes }}</textarea>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">更新</button>
+        </form>
+    </div>
+
+    <!-- 引入 jQuery、Popper.js 和 Bootstrap JS -->
+    <script src="{{ url_for('static', filename='jquery-3.5.1.slim.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='popper.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
+</body>
+</html>

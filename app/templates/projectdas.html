@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProSkill</title>
+    <link href="static/bootstrap.min.css" rel="stylesheet">
+    <script src="static/chart.js"></script>
+    <style>
+        /* 导航栏样式 */
+       .navbar {
+           background-color: #333; /* 暗黑色背景 */
+       }
+       .navbar .navbar-brand {
+           color: white; /* 文字颜色 */
+       }
+       body, html {
+           padding-top: 10px;
+           height: 100%;
+           margin: 0;
+           font-family: 'Arial', sans-serif;
+           background-color: #f8f9fa;
+       }
+       .sidebar {
+           background-color: #343a40;
+           color: white;
+           height: 100%;
+           padding-top: 20px;
+           position: fixed;
+           width: 240px;
+       }
+       .sidebar a {
+           color: white;
+           text-decoration: none;
+           padding: 12px 16px;
+           display: block;
+           font-size: 1.1rem;
+       }
+       .sidebar a:hover {
+           background-color: #007bff;
+       }
+       .container-main {
+           margin-left: 250px;
+           padding-top: 20px;
+       }
+       .chart-container {
+           width: 100%;
+           height: 300px;
+           margin-bottom: 30px;
+           padding: 20px;
+           background: white;
+           border-radius: 10px;
+           box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+       }
+       .chart-title {
+           text-align: center;
+           font-size: 1.4rem;
+           margin-bottom: 20px;
+           color: #343a40;
+       }
+       .dynamic-table {
+           margin-top: 40px;
+       }
+       .dynamic-table table {
+           width: 100%;
+           background: white;
+           border-collapse: collapse;
+           border-radius: 10px;
+           box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+       }
+       .dynamic-table th, .dynamic-table td {
+           padding: 15px;
+           text-align: center;
+           border: 1px solid #ddd;
+       }
+       .dynamic-table th {
+           background-color: #007bff;
+           color: white;
+       }
+       .status-ongoing {
+           color: #007bff;
+           font-weight: bold;
+       }
+       .status-completed {
+           color: #28a745;
+           font-weight: bold;
+       }
+       .status-not-started {
+           color: #dc3545;
+           font-weight: bold;
+       }
+       .chart-container {
+           width: 100%;
+           margin: 0 auto;
+       }
+
+       #isFreeChart, #locationChart, #skillsChart {
+           display: block;
+           margin: 0 auto;
+           max-width: 400px; /* 保持一致大小 */
+       }
+
+       .chart-title {
+           text-align: center;
+           font-size: 1.4rem;
+           margin-bottom: 20px;
+           color: #343a40;
+       }
+
+       .bar-container {
+           padding: 20px; /* 增加柱状图间距 */
+       }
+        .pie-container {
+           display: flex;
+           align-items: center; /* 垂直居中 */
+           justify-content: center; /* 水平居中 */
+        }
+
+        .chart-title-vertical {
+           writing-mode: vertical-rl; /* 竖向排列 */
+           text-align: center;
+           font-size: 1.2rem;
+           margin-right: 15px; /* 和饼状图保持合适间距 */
+           color: #343a40;
+        }
+        #isFreeChart {
+           max-width: 300px;
+           height: auto; /* 保证饼状图大小一致 */
+        }
+        /* 设置每个成员信息的显示为一行 */
+       .modal-body .d-flex {
+           margin-bottom: 10px;
+           padding: 5px;
+           background-color: #f8f9fa;
+           border-radius: 5px;
+           box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+       }
+
+       .modal-body .d-flex div {
+           flex: 1;
+       }
+
+       /* Badge 样式 */
+       .badge {
+           font-size: 14px;
+           padding: 5px 10px;
+           border-radius: 20px;
+       }
+            /* 调整项目人力投入表格容器宽度，使其与其他表格对齐 */
+        .dynamic-table {
+            width: 100%;
+            margin-top: 40px;
+            padding: 20px;
+        }
+
+        #project-table {
+            width: 100%;
+            border-collapse: collapse;  /* 去掉表格边框间的间隙 */
+        }
+
+        /* 启用横向滚动 */
+        #project-table-wrapper {
+            overflow-x: auto;
+        }
+
+        /* 定义月度列的宽度 */
+        #project-table th, #project-table td {
+            white-space: nowrap;  /* 避免内容换行 */
+            text-align: center;
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+
+        #project-table th {
+            background-color: #007bff;
+            color: white;
+        }
+
+    /* 鼠标悬停时的效果 */
+    .sidebar-item:hover {
+        background-color: #007bff;  /* 鼠标悬停时变为蓝色 */
+        color: white;                /* 保持文字为白色 */
+    }
+
+    /* 让 sidebar 在小屏幕设备上调整为可折叠 */
+    @media (max-width: 768px) {
+        .sidebar {
+            width: 100%;
+            height: auto;  /* 允许高度根据内容自适应 */
+            position: relative;
+        }
+
+        .sidebar-item {
+            padding: 12px 15px;  /* 适配小屏幕 */
+        }
+    }
+    #project-table-wrapper {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch; /* For smooth scrolling on mobile */
+    }
+
+    #project-table {
+        width: 100%;
+        border-collapse: collapse;  /* Remove border spacing */
+        table-layout: auto;  /* Auto layout for better responsiveness */
+    }
+
+    #project-table th, #project-table td {
+        white-space: nowrap; /* Prevent text wrapping */
+        padding: 10px;
+        text-align: center;
+        border: 1px solid #ddd;
+    }
+
+    #project-table th {
+        background-color: #007bff;
+        color: white;
+    }
+
+    /* 固定“项目”和“地点”列 */
+    .sticky-col {
+        position: sticky;
+        left: 0;
+        background-color: #f8f9fa;
+        z-index: 2; /* Ensure sticky column is above other content */
+    }
+
+    /* 固定表头 */
+    #project-table th.sticky-col {
+        position: sticky;
+        top: 0;
+        background-color: #007bff;
+        z-index: 2; /* Ensure sticky header remains on top */
+    }
+
+    /* Sticky header */
+    #project-table thead {
+        position: sticky;
+        top: 0;
+        background-color: #007bff;
+        color: white;
+        z-index: 1;
+    }
+
+    /* 防止滚动区域的表格内容被遮挡 */
+    #project-table-wrapper {
+        max-width: 100%; /* Keep within container bounds */
+    }
+
+    /* Add custom width to columns */
+    #project-table th, #project-table td {
+        min-width: 150px;  /* Ensure columns don't shrink too small */
+    }
+    </style>
+</head>
+<body>
+<!-- Sidebar Navigation -->
+<div class="sidebar">
+    <br>
+<!--    <h2>导航菜单</h2>-->
+    <a href="/employeeslist" class="sidebar-item">员工列表</a>
+    <a href="/projects" class="sidebar-item">项目管理</a>
+    <a href="/demo1" class="sidebar-item">项目需求匹配</a>
+    <a href="/demo2" class="sidebar-item">人力资源分配</a>
+</div>
+
+<!-- Main Content -->
+<div class="container-main">
+    <!-- 通用的导航栏 -->
+    {% include 'navbar.html' %}
+    <!-- 页面内容 -->
+    <!-- Charts -->
+    <div class="container py-5">
+        <div class="row">
+            <!-- Location Count Chart -->
+            <div class="col-md-4">
+                <div class="chart-container">
+                    <h5 class="chart-title">地点 vs 人数</h5>
+                    <canvas id="locationChart"></canvas>
+                </div>
+            </div>
+            <!-- isFree Pie Chart -->
+            <div class="col-md-4">
+                <div class="chart-container pie-container">
+                    <h5 class="chart-title-vertical">空闲比</h5>
+                    <canvas id="isFreeChart"></canvas>
+                </div>
+            </div>
+            <!-- Skills Bar Chart -->
+            <div class="col-md-4">
+                <div class="chart-container pie-container">
+                    <h5 class="chart-title">项目人员</h5>
+                    <canvas id="skillsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="dynamic-table container py-5">
+        <h5 class="text-center mb-4">14天内将结束的项目</h5>
+        <table>
+            <thead>
+            <tr>
+                <th>项目名称</th>
+                <th>项目负责人</th> <!-- 新增负责人列 -->
+                <th>地点</th> <!-- 新增地点列 -->
+                <th>项目实施时间</th>
+                <th>项目状态</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody id="projectTableBody">
+            <!-- Dynamic content will be inserted here -->
+            </tbody>
+        </table>
+    </div>
+    <!-- 新增：人员信息表格 -->
+    <div class="dynamic-table container py-5">
+        <h5 class="text-center mb-4">空闲以及14内将要释放的测试人员</h5>
+        <table>
+            <thead>
+            <tr>
+                <th>姓名</th>
+                <th>职级</th>
+                <th>地点</th>
+                <th>当前项目</th>
+                <th>任务排期</th>
+                <th>人员状态</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody id="employeeTableBody">
+            <!-- Dynamic content will be inserted here -->
+            </tbody>
+        </table>
+    </div>
+<!-- 项目人力投入表格 -->
+<div class="dynamic-table container py-5">
+    <h5 class="text-center mb-4">项目人力投入表格</h5><button id="exportBtn" class="btn btn-primary">导出表格</button>
+    <div id="project-table-wrapper" style="overflow-x: auto;">
+        <table id="project-table" class="display">
+            <thead>
+                <tr>
+                    <th class="sticky-col">项目</th> <!-- 固定列 -->
+                    <th class="sticky-col">地点</th> <!-- 固定列 -->
+                    {% for month in months %}
+                        <th>{{ month }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Dynamic content will be inserted here -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+    <!-- 项目详情模态框 -->
+    <div class="modal fade" id="projectDetailsModal" tabindex="-1" aria-labelledby="projectDetailsModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="projectDetailsModalLabel">项目详情</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- 项目详情内容将会被插入这里 -->
+                    <div id="project-details-container"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="static/bootstrap.bundle.min.js"></script>
+<script src="static/jquery-3.5.1.slim.min.js"></script>
+<script src="static/popper.min.js"></script>
+<script src="static/bootstrap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation"></script>
+<script src="static/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.4/xlsx.full.min.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        fetch('/employeesinfonew')
+            .then(response => response.json())
+            .then(data => {
+                // 绘制地点图表
+                new Chart(document.getElementById('locationChart'), {
+                    type: 'line',
+                    data: {
+                        labels: Object.keys(data.location_count),
+                        datasets: [{
+                            label: 'Location Count',
+                            data: Object.values(data.location_count),
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 2,
+                            fill: false
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    precision: 0 // 确保刻度为整数
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'top' // 图例在顶部显示
+                            },
+                            tooltip: {
+                                enabled: true // 启用工具提示
+                            },
+                            // 显示每个点的值
+                            datalabels: {
+                                display: true, // 启用标签显示
+                                color: '#000', // 文字颜色
+                                align: 'top', // 对齐点上方
+                                formatter: (value) => value // 显示对应值
+                            },
+                            // 显示总数并放置在"Location Count"左边
+                            annotation: {
+                                annotations: {
+                                    totalText: {
+                                        type: 'label',
+                                        xAdjust: -60,  // 调整横向位置，使其显示在左边
+                                        yAdjust: -20,  // 调整纵向位置，避免遮挡
+                                        font: {
+                                            size: 14,
+                                            weight: 'bold'
+                                        },
+                                        borderWidth: 0,
+                                        color: 'rgba(0,0,0,0.7)', // 设置文字颜色
+                                        backgroundColor: '#fff', // 背景色，避免与折线图冲突
+                                        padding: 10 // 增加内边距，避免文字被遮挡
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    plugins: [ChartDataLabels] // 引入 Chart.js DataLabels 插件
+                });
+
+
+                // 绘制空闲比饼状图
+                new Chart(document.getElementById('isFreeChart'), {
+                    type: 'pie',
+                    data: {
+                        labels: ['繁忙', '空闲'],
+                        datasets: [{
+                            data: [data.is_free_count.False, data.is_free_count.True],
+                            backgroundColor: ['#ff9900', '#00cc44'],
+                            hoverOffset: 10 // 优化 hover 效果
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { position: 'top' },
+                        },
+                        layout: { padding: 20 } // 居中优化
+                    }
+                });
+
+                // 修改项目人员情况饼状图
+                new Chart(document.getElementById('skillsChart'), {
+                    type: 'pie',
+                    data: {
+                        labels: ['满员', '缺额'], // 数据标签
+                        datasets: [{
+                            data: [data.project_status.full, data.project_status.incomplete], // 满员和缺额数量
+                            backgroundColor: ['#28a745', '#dc3545'], // 分别设置绿色和红色
+                            hoverOffset: 10 // 优化 hover 效果
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { position: 'top' }, // 图例在顶部显示
+                        },
+                        layout: { padding: 20 } // 调整间距
+                    }
+                });
+
+
+                // 动态生成项目表
+                const tableBody = document.getElementById('projectTableBody');
+                data.projects.forEach(project => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${project.name}</td>
+                        <td>${project.manager}</td> <!-- 显示项目负责人 -->
+                        <td>${project.location}</td> <!-- 显示项目地点 -->
+                        <td>${project.start_date} 至 ${project.end_date}</td>
+                        <td class="status-${project.status === '进行中' ? 'ongoing' : project.status === '已结束' ? 'completed' : 'not-started'}">${project.status}</td>
+                        <td><button class="btn btn-primary btn-sm project-details-btn" data-project-name="${project.name}" data-lender="${project.manager}">项目详情</button></td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+
+                // 为每个项目详情按钮绑定点击事件
+                document.querySelectorAll('.project-details-btn').forEach(button => {
+                    button.addEventListener('click', function () {
+                        const projectName = this.getAttribute('data-project-name');
+                        const lender = this.getAttribute('data-lender');
+                        fetchProjectDetails(projectName, lender); // 调用fetchProjectDetails函数
+                    });
+                });
+
+                 // 渲染人员表格
+                const employeeTableBody = document.getElementById('employeeTableBody');
+                data.employees.forEach(employee => {
+                    const statusBadge = employee.status === '空闲'
+                        ? '<span class="badge bg-success">空闲</span>'
+                        : '<span class="badge bg-danger">剩余不到14天</span>';
+
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${employee.name}</td>
+                        <td>${employee.rank}</td>
+                        <td>${employee.location}</td>
+                        <td>${employee.currentProject || '无'}</td>
+                        <td>${employee.taskSchedule || '无排期'}</td>
+                        <td>${statusBadge}</td>
+                       <td>
+                            <a href="/demo2" class="btn btn-primary btn-sm">AI推荐</a>
+                        </td>
+
+                    `;
+                    employeeTableBody.appendChild(row);
+                });
+            });
+    });
+    document.addEventListener('DOMContentLoaded', function () {
+        // 获取后台传递的月份数据
+        const months = {{ months | tojson }};  // 将 Python 列表转换为 JavaScript 数组
+
+        // 获取项目人力数据
+        fetch('/api/project_manpowernew')
+            .then(response => response.json())
+            .then(data => {
+                const tableBody = document.getElementById('project-table').getElementsByTagName('tbody')[0];
+                tableBody.innerHTML = '';  // 清空现有表格内容
+
+                // 处理数据以合并相同项目名称
+                const processedData = {};
+                Object.entries(data).forEach(([projectName, projectData]) => {
+                    if (!processedData[projectName]) {
+                        processedData[projectName] = {
+                            locations: [],
+                            monthlyData: {}
+                        };
+                    }
+                    Object.entries(projectData).forEach(([location, monthlyData]) => {
+                        processedData[projectName].locations.push({
+                            location: location,
+                            monthlyData: monthlyData
+                        });
+                    });
+                });
+
+                // 遍历处理后的数据生成表格
+                Object.entries(processedData).forEach(([projectName, projectInfo]) => {
+                    const rowCount = projectInfo.locations.length;
+                    
+                    projectInfo.locations.forEach((locationData, index) => {
+                        const row = document.createElement('tr');
+
+                        // 只在第一行添加项目名称单元格，并设置rowspan
+                        if (index === 0) {
+                            const projectCell = document.createElement('td');
+                            projectCell.classList.add('sticky-col');
+                            projectCell.style.position = 'sticky';
+                            projectCell.style.left = '0';
+                            projectCell.style.backgroundColor = '#f8f9fa';
+                            projectCell.style.zIndex = '2';
+                            projectCell.textContent = projectName;
+                            if (rowCount > 1) {
+                                projectCell.rowSpan = rowCount;
+                            }
+                            row.appendChild(projectCell);
+                        }
+
+                        // 添加地点单元格
+                        const locationCell = document.createElement('td');
+                        locationCell.classList.add('sticky-col');
+                        locationCell.style.position = 'sticky';
+                        locationCell.style.left = '150px';
+                        locationCell.style.backgroundColor = '#f8f9fa';
+                        locationCell.style.zIndex = '2';
+                        locationCell.textContent = locationData.location;
+                        row.appendChild(locationCell);
+
+                        // 添加月度数据
+                        months.forEach(month => {
+                            const monthCount = locationData.monthlyData[month] || 0;
+                            const monthCell = document.createElement('td');
+                            monthCell.textContent = monthCount;
+
+                            // 根据人数设置背景颜色
+                            if (monthCount > 0) {
+                                if (monthCount < 5) {
+                                    monthCell.style.backgroundColor = '#FFB6C1'; // 浅粉红
+                                } else if (monthCount <= 10) {
+                                    monthCell.style.backgroundColor = '#FF0000'; // 红色
+                                } else {
+                                    monthCell.style.backgroundColor = '#8B0000'; // 深红色
+                                }
+                                monthCell.style.color = monthCount > 5 ? '#FFFFFF' : '#000000'; // 深色背景使用白色文字
+                            }
+
+                            row.appendChild(monthCell);
+                        });
+
+                        tableBody.appendChild(row);
+                    });
+                });
+
+                // 设置表头的固定列样式
+                const headerCells = document.querySelectorAll('#project-table th');
+                headerCells[0].style.position = 'sticky';
+                headerCells[0].style.left = '0';
+                headerCells[0].style.zIndex = '3';
+                headerCells[0].draggable = false;
+
+                headerCells[1].style.position = 'sticky';
+                headerCells[1].style.left = '150px';
+                headerCells[1].style.zIndex = '3';
+                headerCells[1].draggable = false;
+            })
+            .catch(error => console.error('Error fetching project manpower data:', error));
+    });
+
+    // 使用这个函数来获取项目详情
+    function fetchProjectDetails(projectName, lender) {
+        // 发送项目名称和负责人到后端
+        fetch('/projectdetailsnew', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: projectName, lender: lender })
+        })
+        .then(response => response.json())
+        .then(data => {
+            // 构建项目详情HTML
+            let projectDetails = `
+                <h3>项目名称: ${data.name}</h3>
+                <p>项目负责人: ${data.lender}</p>
+                <p>项目人数: ${data.team_size}</p>
+                <h4>项目人员:</h4>
+                <div style="max-height: 300px; overflow-y: auto;"> <!-- 设置最大高度并启用滚动 -->
+            `;
+
+            // 遍历人员列表并添加详细信息
+            data.members.forEach(member => {
+                // 使用颜色块/标签表示空闲状态和是否接受出差
+                const freeStatus = member.isFree ?
+                    '<span class="badge bg-success">空闲</span>' :
+                    '<span class="badge bg-danger">繁忙</span>';
+
+                const travelStatus = member.acceptsTravel ?
+                    '<span class="badge bg-success">接受</span>' :
+                    '<span class="badge bg-danger">不接受</span>';
+
+                projectDetails += `
+                    <div class="d-flex justify-content-between mb-2">
+                        <div><strong>姓名:</strong> ${member.name}</div>
+                        <div><strong>技能:</strong> ${member.skills.join(', ') || '无'}</div>
+                        <div><strong>语言:</strong> ${member.languages.join(', ') || '无'}</div>
+                        <div><strong>空闲状态:</strong> ${freeStatus}</div>
+                        <div><strong>出差意愿:</strong> ${travelStatus}</div>
+                    </div>
+                    <hr>
+                `;
+            });
+
+            projectDetails += `</div>`;  // 结束滚动区域
+
+            // 显示项目详情在页面中
+            document.getElementById('project-details-container').innerHTML = projectDetails;
+
+            // 显示模态框
+            var myModal = new bootstrap.Modal(document.getElementById('projectDetailsModal'));
+            myModal.show();
+        })
+        .catch(error => {
+            console.error('Error fetching project details:', error);
+            alert('该项目未派遣员工！');
+        });
+    }
+document.getElementById('exportBtn').addEventListener('click', function () {
+    // 获取现有表格
+    const table = document.getElementById('project-table');
+
+    // 使用 XLSX 的 table_to_sheet 方法将表格转换为工作表
+    const ws = XLSX.utils.table_to_sheet(table);
+
+    // 获取工作表的范围 (例如 "A1:D10")
+    const range = ws['!ref'];
+
+    // 解析列范围（假设范围格式为 "A1:D10"）
+    const rangeSplit = range.split(":");
+    const startCol = rangeSplit[0].replace(/[0-9]/g, ''); // 获取开始列字母
+    const endCol = rangeSplit[1].replace(/[0-9]/g, ''); // 获取结束列字母
+
+    // 遍历表格的所有单元格
+    for (let col = startCol.charCodeAt(0); col <= endCol.charCodeAt(0); col++) {
+        const colLetter = String.fromCharCode(col); // 获取列字母
+
+        // 遍历每一行数据
+        for (let row = 2; row <= 100; row++) { // 假设表格最多有100行数据
+            const cell = ws[colLetter + row];
+            if (cell) {
+                // 如果单元格内容是日期格式，提取年月
+                if (cell.v instanceof Date) {
+                    // 获取年份和月份
+                    const year = cell.v.getFullYear();
+                    const month = cell.v.getMonth() + 1; // getMonth() 返回的月份是从 0 开始的，所以要加 1
+                    // 格式化为 "yyyy年MM月" 或 "yyyy-MM"
+                    const formattedDate = `${year}年${month < 10 ? '0' : ''}${month}月`;
+                    cell.v = formattedDate; // 设置格式化后的年月
+                    cell.t = 's'; // 设置为文本格式
+                }
+            }
+        }
+    }
+
+    // 创建一个新的工作簿
+    const wb = XLSX.utils.book_new();
+
+    // 将工作表添加到工作簿
+    XLSX.utils.book_append_sheet(wb, ws, 'Project Data');
+
+    // 导出为 XLSX 文件
+    XLSX.writeFile(wb, 'project-manpower.xlsx');
+});
+
+
+
+</script>
+</body>
+</html>

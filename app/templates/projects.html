@@ -1,0 +1,272 @@
+<!-- templates/projects.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ProSkill</title>
+    <!-- 引入 Bootstrap CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}">
+    <style>
+        /* 设置表格宽度为100% */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
+        /* 统一表格行高 */
+        .table td, .table th {
+            vertical-align: middle !important;
+            padding: 12px 15px;
+        }
+        /* 增加表头的背景颜色 */
+        .thead-dark th {
+            background-color: #343a40;
+            color: #fff;
+        }
+        /* 增加按钮之间的间距 */
+        .btn-group .btn {
+            margin-right: 10px;
+            float: right;
+        }
+    </style>
+</head>
+<body>
+
+        <div class="container-fluid">
+        <div class="row mb-3">
+            <div class="col-md-8 col-12 text-md-left text-center">
+                <div class="btn-group">
+                    <button class="btn btn-secondary" id="back-to-overview">返回总览</button>
+                    <button type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#addProjectModal">
+                        添加项目
+                    </button>
+                    <button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#addEmployeeModal">
+                        添加公共员工
+                    </button>
+                    <button type="button" class="btn btn-info btn-sm" onclick="location.href='/employeeslist';">
+                        员工列表
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">项目ID</th>
+                        <th scope="col">项目名称</th>
+                        <th scope="col">负责人</th>
+                        <th scope="col">实施周期</th>
+                        <th scope="col">地点</th>
+                        <th scope="col">接受远程</th>
+                        <th scope="col">语言要求</th>
+                        <th scope="col">需求人数</th>
+                        <th scope="col">备注</th>
+                        <th scope="col">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for project in projects %}
+                    <tr>
+                        <th scope="row">{{ project.id }}</th>
+                        <td>{{ project.project_name }}</td>
+                        <td>{{ project.responsible_person }}</td>
+                        <td>{{ project.implementation_period }}</td>
+                        <td>{{ project.location }}</td>
+                        <td>{{ '是' if project.remote_allowed else '否' }}</td>
+                        <td>{{ project.language_requirement }}</td>
+                        <td>{{ project.required_number }}</td>
+                        <td>{{ project.notes }}</td>
+                        <td>
+                            <a href="{{ url_for('staffedit.project_details', project_id=project.id) }}" class="btn btn-primary btn-sm">详情</a>
+                            <a href="{{ url_for('staffedit.edit_project', project_id=project.id) }}" class="btn btn-secondary btn-sm">编辑</a>
+                            <button type="button" class="btn btn-danger btn-sm" data-project-id="{{ project.id }}" onclick="deleteProject(this)">删除</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+<!-- 添加项目的模态框 -->
+<div class="modal fade" id="addProjectModal" tabindex="-1" role="dialog" aria-labelledby="addProjectModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addProjectModalLabel">添加项目</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="addProjectForm" action="{{ url_for('staffedit.add_project') }}" method="POST">
+                    <!-- 第一行：项目名称、负责人、实施周期 -->
+                    <div class="row">
+                        <div class="col-md-6 form-group">
+                            <label for="projectName">项目名称</label>
+                            <input type="text" class="form-control" id="projectName" name="project_name" required>
+                        </div>
+                        <div class="col-md-6 form-group">
+                            <label for="responsiblePerson">负责人</label>
+                            <input type="text" class="form-control" id="responsiblePerson" name="responsible_person" required>
+                        </div>
+                    </div>
+                     <div class="row">
+                        <div class="col-md-12 form-group">
+                            <label for="implementationPeriod">实施周期</label>
+                            <input type="text" class="form-control" id="implementationPeriod" placeholder="例如：2024-01-01到2024-12-31" name="implementation_period" required>
+                            <small class="form-text text-muted">请输入任务的开始日期和结束日期，格式为“YYYY-MM-DD到YYYY-MM-DD”。</small>
+                        </div>
+                    </div>
+
+                    <!-- 第二行：地点、接受远程、语言要求 -->
+                    <div class="row">
+                        <div class="col-md-4 form-group">
+                            <label for="location">地点</label>
+                            <input type="text" class="form-control" id="location" name="location" required>
+                        </div>
+                        <div class="col-md-4 form-group">
+                            <label for="remoteAllowed">接受远程</label>
+                            <select class="form-control" id="remoteAllowed" name="remote_allowed" required>
+                                <option value="True">是</option>
+                                <option value="False">否</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 form-group">
+                            <label for="languageRequirement">语言要求</label>
+                            <input type="text" class="form-control" id="languageRequirement" name="language_requirement" required>
+                        </div>
+                    </div>
+
+                    <!-- 第三行：需求人数、备注 -->
+                    <div class="row">
+                        <div class="col-md-4 form-group">
+                            <label for="requiredNumber">需求人数</label>
+                            <input type="number" class="form-control" id="requiredNumber" name="required_number" required>
+                        </div>
+                        <div class="col-md-8 form-group">
+                            <label for="notes">备注</label>
+                            <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">提交</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 添加公共员工的模态框 -->
+<div class="modal fade" id="addEmployeeModal" tabindex="-1" role="dialog" aria-labelledby="addEmployeeModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addEmployeeModalLabel">添加公共员工</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="addEmployeeForm" action="{{ url_for('staffedit.add_employee') }}" method="POST">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="name">姓名</label>
+                                <input type="text" class="form-control" id="name" name="name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="level">职级</label>
+                                <select class="form-control" id="level" name="level" required>
+                                    <option value="">请选择...</option>
+                                    <option value="B0">B0</option>
+                                    <option value="B1">B1</option>
+                                    <option value="B2">B2</option>
+                                    <option value="B3">B3</option>
+                                    <option value="B4">B4</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="skill">专业能力</label>
+                                <input type="text" class="form-control" id="skill" name="skill" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="location">地点</label>
+                                <select class="form-control" id="location" name="location" required>
+                                    <option value="">请选择...</option>
+                                    <option value="上海">上海</option>
+                                    <option value="大连">大连</option>
+                                    <option value="广州">广州</option>
+                                    <option value="深圳">深圳</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="sex">性别</label>
+                                <select class="form-control" id="sex" name="sex" required>
+                                    <option value="">请选择...</option>
+                                    <option value="男">男</option>
+                                    <option value="女">女</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="chai">接受出差</label>
+                                <select class="form-control" id="chai" name="chai" required>
+                                    <option value="True">是</option>
+                                    <option value="False">否</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="lang">语言能力</label>
+                                <input type="text" class="form-control" id="lang" name="lang" required>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">提交</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 引入 jQuery、Popper.js 和 Bootstrap JS -->
+<script src="{{ url_for('static', filename='jquery-3.5.1.slim.min.js') }}"></script>
+<script src="{{ url_for('static', filename='popper.min.js') }}"></script>
+<script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
+<script src="{{ url_for('static', filename='jquery-3.6.0.min.js') }}"></script>
+<script>
+    // 删除项目的函数
+    function deleteProject(button) {
+        var projectId = button.getAttribute('data-project-id');
+        if (confirm('确定删除这个项目吗？')) {
+            var requestData = { project_id: projectId };
+            var url = "/projects_remove";
+            $.ajax({
+                url: url,
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(requestData),
+                success: function(response) {
+                    alert(response.message);
+                    location.reload();
+                },
+                error: function(error) {
+                    console.log(error);
+                    alert('发生错误，请重试');
+                }
+            });
+        }
+    }
+    var backButton = document.getElementById('back-to-overview');
+
+        // 为按钮添加点击事件监听器
+        backButton.addEventListener('click', function() {
+            // 点击按钮后跳转到总览页面
+            window.location.href = '/proDashboardnew'; // 将 '/overview' 替换成你的总览页面的实际URL
+        });
+</script>
+</body>
+</html>

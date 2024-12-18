@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Server Resources</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}">
+    <script src="{{ url_for('static', filename='jquery-3.5.1.min.js') }}"></script>
+    <script>
+        function fetchResources() {
+            $.ajax({
+                url: '/api/resources',
+                type: 'GET',
+                success: function(data) {
+                    $('#cpu_usage').text(data.cpu_usage + '%');
+                    $('#memory_usage').text(data.memory_usage + '%');
+                    $('#disk_usage').text(data.disk_usage + '%');
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.error('Error fetching resources:', textStatus, errorThrown);
+                    $('#cpu_usage').text('Error');
+                    $('#memory_usage').text('Error');
+                    $('#disk_usage').text('Error');
+                },
+                complete: function() {
+                    // 每2秒刷新一次
+                    setTimeout(fetchResources, 2000);
+                }
+            });
+        }
+        $(document).ready(function() {
+            fetchResources();
+        });
+    </script>
+</head>
+<body>
+    <h1>Server Resources</h1>
+    <p>CPU Usage: <span id="cpu_usage">-</span></p>
+    <p>Memory Usage: <span id="memory_usage">-</span></p>
+    <p>Disk Usage: <span id="disk_usage">-</span></p>
+</body>
+</html>

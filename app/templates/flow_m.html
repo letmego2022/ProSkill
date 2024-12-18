@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Script AI generation flowchart designer</title>
+    <link rel="stylesheet" href="static/bootstrap.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsPlumb/2.15.5/js/jsplumb.min.js"></script>
+
+    <style>
+	 /* 暗黑色主题样式 */
+        body, html {
+            padding-top: 50px;
+            height: 100%;
+            margin: 0;
+            font-family: 'Arial', sans-serif;
+        }
+        #diagramContainer {
+            width: 100%;
+            height: 500px;
+            position: relative;
+            border: 1px solid #ccc;
+            margin: 20px;
+            overflow: auto;
+        }
+        .node {
+            border: 1px solid black;
+            position: absolute;
+            text-align: center;
+            line-height: 40px;
+            border-radius: 5px;
+            background-color: #f0f0f0;
+        }
+        .editable-node {
+            width: 200px;
+            height: auto;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            cursor: pointer;
+        }
+        .read-only-node {
+            width: 120px;
+            height: 40px;
+            border-radius: 5px;
+        }
+        #saveButton {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        #saveButton:hover {
+            background-color: #45a049;
+        }
+        #editModal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            width: 60%;  /* Adjusted width */
+            height: 80%; /* Adjusted height */
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+            overflow: auto; /* Added to enable scrolling if content overflows */
+        }
+        .modal-content textarea {
+            width: 100%;
+            height: 80%; /* Adjusted height */
+            resize: none;
+        }
+        .modal-buttons {
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <!-- 通用的导航栏 -->
+    {% include 'navbar.html' %}
+    <h2>Script AI generation flowchart designer</h2>
+    <div id="diagramContainer"></div>
+
+    <!-- 编辑模态窗口 -->
+    <div id="editModal">
+        <div class="modal-content">
+            <h3>Editorial content</h3>
+            <textarea id="editTextArea"></textarea>
+            <div class="modal-buttons">
+                <button id="closeModalButton">cancel</button>
+                <button id="saveModalButton">save</button>
+            </div>
+        </div>
+    </div>
+	<script src="static/jquery-3.5.1.min.js"></script>
+	<script src="static/bootstrap.min.js"></script>
+    <script src="static/popper.min.js"></script>
+    <script>
+        let currentEditingNode = null;  // 当前正在编辑的节点
+        let flowData = {};  // 保存当前流程图数据
+
+    async function loadFlowchart() {
+        try {
+            const response = await fetch('/flowchart_m');
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            flowData = await response.json();
+
+            const diagramContainer = document.getElementById('diagramContainer');
+            jsPlumb.ready(function () {
+                jsPlumb.setContainer(diagramContainer);
+
+                // 清空容器
+                diagramContainer.innerHTML = '';
+
+                // 设置节点的初始位置
+                const nodePositionsMap = {};  // 用于存储节点位置的映射
+                const verticalSpacing = 100;  // 垂直间距
+                const horizontalSpacing = 200;  // 水平间距
+
+                // 用于节点水平位置的调整
+                const adjustNodePositions = () => {
+                    const nodeQueue = [];
+                    const visited = new Set();
+                    
+                    // 深度优先遍历来调整节点位置
+                    const positionNodes = (nodeId, x, y) => {
+                        if (visited.has(nodeId)) return;
+                        visited.add(nodeId);
+
+                        // 记录节点位置
+                        nodePositionsMap[nodeId] = { top: y, left: x };
+
+                        // 找到所有连接的目标节点
+                        const childNodes = flowData.links.filter(link => link.source === nodeId).map(link => link.target);
+
+                        if (childNodes.length > 0) {
+                            const totalWidth = horizontalSpacing * (childNodes.length - 1); // 计算子节点所需的总宽度
+                            let currentX = x - totalWidth / 2;  // 从父节点中心向左右扩展
+
+                            // 调整子节点位置
+                            childNodes.forEach(childId => {
+                                currentX += horizontalSpacing;  // 依次排列子节点
+                                nodeQueue.push({ id: childId, x: currentX, y: y + verticalSpacing });
+                            });
+                        }
+                    };
+
+                    // 初始化从根节点开始遍历
+                    flowData.nodes.forEach(node => {
+                        if (!Object.values(flowData.links).some(link => link.target === node.id)) {
+                            nodeQueue.push({ id: node.id, x: 50, y: 50 });  // 假设根节点在初始位置
+                        }
+                    });
+
+                    // 处理队列中的节点
+                    while (nodeQueue.length > 0) {
+                        const { id, x, y } = nodeQueue.shift();
+                        positionNodes(id, x, y);
+                    }
+                };
+
+                adjustNodePositions();
+
+                // 创建节点
+                flowData.nodes.forEach(node => {
+                    const div = document.createElement('div');
+                    div.className = node.editable ? 'node editable-node' : 'node read-only-node';
+                    div.id = node.id;
+                    div.innerHTML = node.editable ? node.label : node.label;  // 节点标签
+                    const position = nodePositionsMap[node.id];
+                    div.style.top = (position ? position.top : 50) + 'px';
+                    div.style.left = (position ? position.left : 50) + 'px';
+
+                    // 点击编辑
+                    if (node.editable) {
+                        div.addEventListener('click', function() {
+                            openEditModal(node.id);
+                        });
+                    }
+
+                    diagramContainer.appendChild(div);
+
+                    // 设置连接点
+                    jsPlumb.addEndpoint(div.id, { anchors: "Right" }, { isSource: true });
+                    if (!node.editable) {
+                        jsPlumb.addEndpoint(div.id, { anchors: "Left" }, { isTarget: true });
+                    }
+                });
+
+                // 使用 Bezier 曲线连接器
+                flowData.links.forEach(link => {
+                    jsPlumb.connect({
+                        source: link.source,
+                        target: link.target,
+                        connector: ["Bezier", { curviness: 50 }],
+                        overlays: [["Arrow", { width: 12, length: 12, location: 1 }]]
+                    });
+                });
+            });
+        } catch (error) {
+            console.error('Error loading flowchart:', error);
+        }
+    }
+
+        window.onload = loadFlowchart;
+
+        // 打开编辑模态窗口
+        function openEditModal(nodeId) {
+            const node = flowData.nodes.find(n => n.id === nodeId);
+            const editTextArea = document.getElementById('editTextArea');
+            editTextArea.value = node.content || '';  // 在编辑框中展示内容（从节点的 content 属性获取）
+            document.getElementById('editModal').style.display = 'block';  // 显示模态窗口
+            currentEditingNode = nodeId;  // 记录当前正在编辑的节点ID
+        }
+
+        // 关闭模态窗口
+        document.getElementById('closeModalButton').addEventListener('click', function() {
+            document.getElementById('editModal').style.display = 'none';
+        });
+        
+        // 保存编辑内容
+        document.getElementById('saveModalButton').addEventListener('click', async function() {
+            const updatedContent = document.getElementById('editTextArea').value;
+
+            try {
+                const response = await fetch('/save_node_data', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ id: currentEditingNode, content: updatedContent })
+                });
+
+                if (response.ok) {
+                    alert('Node content saved');
+                    document.getElementById('editModal').style.display = 'none';  // 关闭模态窗口
+                    loadFlowchart();  // 重新加载流程图以显示更新内容
+                } else {
+                    alert('fail to save');
+                }
+            } catch (error) {
+                console.error('Error saving node data:', error);
+            }
+        });
+    </script>
+</body>
+</html>
